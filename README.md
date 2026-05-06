@@ -51,4 +51,8 @@ Default H2 settings from the current configuration:
 ## Notes
 
 - This project is intended as a backend service only.
+<<<<<<< HEAD
 - Any web or mobile frontend should be developed in a separate repository or client application.
+=======
+- Any web or mobile frontend should be developed in a separate repository or client application.
+>>>>>>> 99692646ce9b7c4fee95e218d1cce32789187b2a
