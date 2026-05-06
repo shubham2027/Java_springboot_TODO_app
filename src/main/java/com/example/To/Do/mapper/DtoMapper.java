@@ -27,7 +27,7 @@ public class DtoMapper {
                 todo.getId(),
                 todo.getTitle(),
                 todo.getDescription(),
-                todo.isCompleted(),
+                todo.getCompleted(),
                 todo.getCreatedAt(),
                 userId
         );

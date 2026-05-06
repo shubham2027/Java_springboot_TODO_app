@@ -19,7 +19,6 @@ public class TodoDTO {
     @Size(min = 3, max = 100, message = "Title must be between 3 and 100 characters")
     private String title;
 
-    @NotBlank(message = "Description is required")
     @Size(max = 500, message = "Description must be less than 500 characters")
     private String description;
 
