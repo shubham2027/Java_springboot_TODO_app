@@ -1,65 +1,60 @@
 import { useState } from 'react'
+import { createUser, loginUser } from '../api/usersApi'
 import { StatusMessage } from '../components/shared/StatusMessage'
 import { Panel } from '../components/shared/Panel'
+import { LoginForm } from '../components/users/LoginForm'
 import { UserForm } from '../components/users/UserForm'
-import { UserList } from '../components/users/UserList'
-import { useUsers } from '../hooks/useUsers'
 
 export function UsersPage({ onOpenTodos }) {
-  const { users, loading, error, addUser, editUser, removeUser } = useUsers()
-  const [busy, setBusy] = useState(false)
-  const [actionError, setActionError] = useState('')
+  const [registerBusy, setRegisterBusy] = useState(false)
+  const [loginBusy, setLoginBusy] = useState(false)
+  const [registerError, setRegisterError] = useState('')
+  const [loginError, setLoginError] = useState('')
+  const [registerSuccess, setRegisterSuccess] = useState('')
 
   async function handleCreate(form) {
-    setBusy(true)
-    setActionError('')
+    setRegisterBusy(true)
+    setRegisterError('')
+    setRegisterSuccess('')
 
     try {
-      await addUser(form)
+      await createUser(form)
+      setRegisterSuccess('Account created. You can log in now.')
     } catch (err) {
-      setActionError(err.message)
+      setRegisterError(err.message)
     } finally {
-      setBusy(false)
+      setRegisterBusy(false)
     }
   }
 
-  async function handleDelete(userId) {
-    setActionError('')
-    try {
-      await removeUser(userId)
-    } catch (err) {
-      setActionError(err.message)
-    }
-  }
+  async function handleLogin(form) {
+    setLoginBusy(true)
+    setLoginError('')
 
-  async function handleUpdate(userId, payload) {
-    setActionError('')
     try {
-      await editUser(userId, payload)
+      const loggedInUser = await loginUser(form)
+      onOpenTodos(loggedInUser)
     } catch (err) {
-      setActionError(err.message)
+      setLoginError(err.message)
+    } finally {
+      setLoginBusy(false)
     }
   }
 
   return (
     <main className="stack">
       <Panel
-        title="Users"
-        subtitle="Create and manage accounts before assigning todos."
+        title="Create Account"
+        subtitle="Register with a valid username, email, and password."
       >
-        <UserForm onSubmit={handleCreate} busy={busy} />
-        <StatusMessage kind="error" text={actionError} />
+        <UserForm onSubmit={handleCreate} busy={registerBusy} />
+        <StatusMessage kind="error" text={registerError} />
+        <StatusMessage kind="success" text={registerSuccess} />
       </Panel>
 
-      <Panel title="All Users" subtitle="Select one user to open their todo workspace.">
-        {loading ? <p className="loading">Loading users...</p> : null}
-        <StatusMessage kind="error" text={error} />
-        <UserList
-          users={users}
-          onOpenTodos={onOpenTodos}
-          onDelete={handleDelete}
-          onUpdate={handleUpdate}
-        />
+      <Panel title="Login" subtitle="Only logged-in users can manage their own todos.">
+        <LoginForm onSubmit={handleLogin} busy={loginBusy} />
+        <StatusMessage kind="error" text={loginError} />
       </Panel>
     </main>
   )

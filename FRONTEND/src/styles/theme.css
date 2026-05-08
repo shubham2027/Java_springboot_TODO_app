@@ -236,6 +236,18 @@ button.danger:hover {
   border: 1px solid #fecaca;
 }
 
+.status.success {
+  color: #14532d;
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+}
+
+.field-error {
+  color: #b91c1c;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
 .loading,
 .empty {
   margin: 0 0 0.75rem;

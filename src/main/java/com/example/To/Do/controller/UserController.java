@@ -10,9 +10,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.To.Do.dto.LoginRequestDTO;
 import com.example.To.Do.dto.UserRequestDTO;
 import com.example.To.Do.dto.UserResponseDTO;
 import com.example.To.Do.dto.UserUpdateDTO;
@@ -24,6 +26,7 @@ import lombok.Data;
 
 // @Data
 @RestController
+@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/api/users")
 public class UserController {
     
@@ -36,6 +39,11 @@ public class UserController {
     @PostMapping
     public ResponseEntity<UserResponseDTO> createUser(@Valid @RequestBody UserRequestDTO requestDTO) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(requestDTO));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<UserResponseDTO> login(@Valid @RequestBody LoginRequestDTO loginRequestDTO) {
+        return ResponseEntity.ok(userService.login(loginRequestDTO));
     }
 
     @GetMapping

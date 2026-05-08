@@ -1,0 +1,386 @@
+# To-Do Project: Complete Technical Details
+
+## 1) Project Overview
+
+This project is a full-stack To-Do application with:
+- A Spring Boot backend exposing REST APIs for users and todos.
+- A React + Vite frontend for account creation, login, and todo management.
+- H2 in-memory database for development/testing.
+
+The functional model is:
+- A user can register and log in.
+- A logged-in user can create, view, update, and delete only their own todos (via user-scoped API paths).
+
+
+## 2) Tech Stack
+
+### Backend
+- Java 25
+- Spring Boot 4.0.2
+- Spring Web MVC
+- Spring Data JPA (Hibernate)
+- Jakarta Validation
+- H2 database (in-memory)
+- Lombok
+- Spring Security Crypto (BCrypt password hashing)
+- Maven Wrapper (mvnw / mvnw.cmd)
+
+### Frontend
+- React 19
+- Vite 8
+- Native fetch API (custom HTTP helper)
+- Plain CSS (modular organization)
+
+
+## 3) High-Level Architecture
+
+### Backend Layering
+- Controller layer: receives HTTP requests and returns HTTP responses.
+- Service layer: business logic and validation decisions.
+- Repository layer: JPA queries and persistence.
+- DTO + Mapper layer: request/response shape separation from entities.
+- Exception layer: centralized error response handling.
+
+### Frontend Layering
+- pages/: top-level screens and orchestration.
+- components/: reusable UI pieces.
+- api/: functions that call backend endpoints.
+- hooks/: stateful business logic wrappers.
+- utils/: validation helpers.
+- styles/: theme and component styles.
+
+
+## 4) Backend Project Structure
+
+- src/main/java/com/example/To/Do/ToDoApplication.java
+- src/main/java/com/example/To/Do/controller/
+	- UserController.java
+	- TodoController.java
+- src/main/java/com/example/To/Do/service/
+	- UserService.java
+	- TodoService.java
+- src/main/java/com/example/To/Do/repository/
+	- UserRepository.java
+	- TodoRepository.java
+- src/main/java/com/example/To/Do/entity/
+	- User.java
+	- Todo.java
+- src/main/java/com/example/To/Do/dto/
+	- UserRequestDTO.java
+	- UserUpdateDTO.java
+	- UserResponseDTO.java
+	- LoginRequestDTO.java
+	- TodoDTO.java
+	- TodoUpdateDTO.java
+- src/main/java/com/example/To/Do/mapper/
+	- DtoMapper.java
+- src/main/java/com/example/To/Do/utils/
+	- PasswordEncoder.java
+- src/main/java/com/example/To/Do/exceptions/
+	- GlobalExceptionHandler.java
+	- ErrorResponse.java
+	- ResourceNotFoundException.java
+	- EmptyDb.java
+
+
+## 5) Frontend Project Structure
+
+- FRONTEND/src/App.jsx
+- FRONTEND/src/pages/
+	- UsersPage.jsx
+	- TodosPage.jsx
+- FRONTEND/src/components/
+	- shared/Panel.jsx
+	- shared/StatusMessage.jsx
+	- users/UserForm.jsx
+	- users/LoginForm.jsx
+	- todos/TodoForm.jsx
+	- todos/TodoList.jsx
+- FRONTEND/src/api/
+	- httpClient.js
+	- usersApi.js
+	- todosApi.js
+- FRONTEND/src/hooks/
+	- useUsers.js (legacy utility hook; not used by current landing page)
+	- useTodos.js
+- FRONTEND/src/utils/
+	- validation.js
+- FRONTEND/src/styles/
+	- theme.css
+
+
+## 6) Data Model
+
+### User Entity
+Fields:
+- id (Long, PK, auto-generated)
+- username (unique, required)
+- email (unique, required, email format)
+- password (required, min 6, write-only in JSON, stored hashed with BCrypt)
+- createdAt (LocalDateTime)
+- todos (OneToMany mapped by user)
+
+### Todo Entity
+Fields:
+- id (Long, PK, auto-generated)
+- title (required, 3-100 chars)
+- description (required, max 500 chars)
+- completed (Boolean)
+- createdAt (LocalDateTime)
+- user (ManyToOne, required FK)
+
+Relationship:
+- One User -> Many Todos
+
+
+## 7) API Endpoints
+
+Base URL:
+- http://localhost:8080
+
+### User APIs
+- POST /api/users
+	- Create user account.
+- POST /api/users/login
+	- Login using username + password; service checks the password against the stored BCrypt hash.
+- GET /api/users
+	- Fetch all users.
+- GET /api/users/{userId}
+	- Fetch user by id.
+- PUT /api/users/{userId}
+	- Update user fields.
+- DELETE /api/users/{userId}
+	- Delete user account.
+
+### Todo APIs (User-Scoped)
+- POST /api/users/{userId}/todos
+	- Create todo for a user.
+- GET /api/users/{userId}/todos
+	- Get all todos for a user.
+- GET /api/users/{userId}/todos/{todoId}
+	- Get single todo.
+- PUT /api/users/{userId}/todos/{todoId}
+	- Update todo.
+- DELETE /api/users/{userId}/todos/{todoId}
+	- Delete todo.
+- GET /api/users/{userId}/todos/hello
+	- Utility/test endpoint.
+
+
+## 8) Validation Rules
+
+### Backend Validation (DTO/Entity)
+- User create:
+	- username required, 3-50
+	- email required, valid format
+	- password required, min 6
+- User update:
+	- optional fields, with format/size constraints if provided
+- Login:
+	- username required
+	- password required
+- Todo create:
+	- title required, 3-100
+	- description max 500
+- Todo update:
+	- title optional (3-100)
+	- description required, max 500
+	- completed optional
+
+### Frontend Validation
+File: FRONTEND/src/utils/validation.js
+- username regex: [A-Za-z0-9_], length 3-30
+- email regex validation
+- password length >= 6
+
+Applied in:
+- UserForm (registration)
+- LoginForm
+
+
+## 9) Current User Workflow
+
+### A) Registration + Login
+1. User opens landing page.
+2. User can create account via Create Account panel.
+3. User logs in via Login panel (username + password).
+4. On successful login, frontend sets activeUser in memory and opens Todos screen.
+
+### B) Todo Management (Logged-In)
+1. Frontend calls todo endpoints using activeUser.id.
+2. User can create, edit, mark complete/pending, and delete todos.
+3. User can logout (returns to login/register screen).
+4. User can delete own account from Todos screen.
+
+
+## 10) Security / Access Model (Current)
+
+Current model is simple and lightweight:
+- Login checks username, then compares the provided password against the stored BCrypt hash.
+- No JWT/session token yet.
+- Frontend state controls which user workspace is shown.
+- Todo APIs are user-scoped by path (/api/users/{userId}/...).
+
+Important limitation:
+- Passwords are no longer stored as plain text.
+- The current model still does not include token-based auth, so access control is driven by the current frontend flow and user-scoped endpoints.
+
+
+## 11) CORS Setup
+
+CORS is enabled for frontend origin:
+- http://localhost:5173
+
+Applied on controllers:
+- UserController: @CrossOrigin(origins = "http://localhost:5173")
+- TodoController: @CrossOrigin(origins = "http://localhost:5173")
+
+
+## 12) Error Handling Behavior
+
+Centralized handler:
+- GlobalExceptionHandler returns ErrorResponse with:
+	- timestamp
+	- status
+	- error
+	- message
+	- path (currently empty string in handler)
+
+Mapped exceptions:
+- ResourceNotFoundException -> 404
+- EmptyDb -> 404
+- IllegalArgumentException -> 400
+- Generic Exception -> 500
+
+
+## 13) Runtime Configuration
+
+File: src/main/resources/application.yaml
+
+Key values:
+- server.port = 8080
+- datasource.url = jdbc:h2:mem:tododb;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+- hibernate.ddl-auto = create-drop
+- h2 console enabled at /h2-console
+
+Note:
+- create-drop recreates schema at startup and drops on shutdown.
+- Data is not persistent between runs.
+
+
+## 14) Build and Run Instructions
+
+### Backend
+From project root:
+- .\mvnw.cmd spring-boot:run
+
+Backend URLs:
+- API: http://localhost:8080
+- H2 Console: http://localhost:8080/h2-console
+	- JDBC: jdbc:h2:mem:tododb
+	- User: sa
+	- Password: (empty)
+
+### Frontend
+From FRONTEND folder:
+- npm install
+- npm run dev
+
+Frontend URL:
+- http://localhost:5173
+
+Production build:
+- npm run build
+
+
+## 15) Testing Notes
+
+### API Testing
+- Use Postman for all user/todo endpoints.
+- Test both success and failure scenarios.
+
+### Automated Tests
+- Only a basic Spring context load test exists currently:
+	- src/test/java/com/example/To/Do/ToDoApplicationTests.java
+
+
+## 16) Key Features Implemented
+
+- User registration with duplicate checks.
+- User login endpoint (username + password).
+- User CRUD operations.
+- Todo CRUD per user.
+- DTO mapping for API contracts.
+- Centralized exception handling with JSON error response.
+- CORS support for React frontend.
+- Frontend modular architecture.
+- Frontend field-level validation.
+- Login-gated todo management UX.
+
+
+## 17) Known Gaps / Current Constraints
+
+- Passwords are not hashed.
+- No token-based authentication/authorization.
+- API itself does not enforce identity ownership beyond userId path usage.
+- Validation exceptions are not custom-formatted separately (generic handling may return 500 in some validation cases).
+- README.md currently has merge conflict markers and should be cleaned.
+- H2 in-memory DB means no persistence across restarts.
+
+
+## 18) Suggested Upcoming Features (Practical Roadmap)
+
+### Security and Auth
+- Hash passwords using BCrypt.
+- Add JWT-based login/auth.
+- Secure todo/user APIs with authenticated principal checks.
+
+### API and Validation
+- Add handler for MethodArgumentNotValidException -> clean 400 validation responses.
+- Include request path in ErrorResponse.path.
+- Add pagination and sorting for users/todos.
+- Add filter endpoints (completed/pending todos).
+
+### Data and Persistence
+- Move from H2 in-memory to persistent DB (PostgreSQL/MySQL).
+- Add Flyway/Liquibase migrations.
+
+### Frontend UX
+- Add route-based navigation with React Router.
+- Add toast notifications for success/failure.
+- Add loading skeletons and better empty states.
+- Add profile screen and password change flow.
+
+### Quality and DevOps
+- Add unit and integration tests for services/controllers.
+- Add frontend component tests.
+- Add CI pipeline for build + test.
+- Add Docker setup for backend/frontend.
+
+
+## 19) End-to-End Flow Summary
+
+1. User opens frontend.
+2. User registers account (Create Account panel).
+3. User logs in (Login panel).
+4. Frontend receives UserResponseDTO and sets active user.
+5. Todo screen loads todos for that user id.
+6. User performs create/update/toggle/delete todo actions.
+7. Frontend calls user-scoped endpoints and refreshes local state.
+8. User logs out or deletes account.
+
+
+## 20) Quick Command Reference
+
+Backend compile:
+- .\mvnw.cmd -q -DskipTests compile
+
+Backend run:
+- .\mvnw.cmd spring-boot:run
+
+Frontend dev:
+- npm run dev
+
+Frontend build:
+- npm run build
+

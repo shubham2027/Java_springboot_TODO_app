@@ -1,8 +1,8 @@
 # To-Do Backend
 
-This repository contains only the backend for a To-Do application.
+This repository contains the Spring Boot backend for a To-Do application, with a separate React frontend available in the `FRONTEND/` folder.
 
-There is no frontend or client UI in this project. It provides a REST API built with Spring Boot for managing users and their todos.
+It provides a REST API for managing users and their todos.
 
 ## Tech Stack
 
@@ -19,6 +19,7 @@ There is no frontend or client UI in this project. It provides a REST API built 
 - Todo CRUD operations scoped to a user
 - Request validation with DTOs
 - Centralized exception handling
+- Passwords stored in the database are hashed with BCrypt
 - H2 console for local development
 
 ## API Base Paths
@@ -50,9 +51,6 @@ Default H2 settings from the current configuration:
 
 ## Notes
 
-- This project is intended as a backend service only.
-<<<<<<< HEAD
-- Any web or mobile frontend should be developed in a separate repository or client application.
-=======
-- Any web or mobile frontend should be developed in a separate repository or client application.
->>>>>>> 99692646ce9b7c4fee95e218d1cce32789187b2a
+- Passwords are hashed before being saved, and login compares the raw input against the stored hash.
+- The password hashing logic is kept modular in `src/main/java/com/example/To/Do/utils/PasswordEncoder.java`.
+- Any web or mobile frontend can live in a separate client application or use the included `FRONTEND/` app.

@@ -68,7 +68,7 @@ export function TodosPage({ user, onBack, onUserDeleted }) {
         actions={
           <div className="actions-row">
             <button type="button" className="ghost" onClick={onBack}>
-              Back to Users
+              Logout
             </button>
             <button type="button" className="danger" onClick={handleDeleteUser}>
               Delete User
@@ -80,7 +80,7 @@ export function TodosPage({ user, onBack, onUserDeleted }) {
         <StatusMessage kind="error" text={actionError} />
       </Panel>
 
-      <Panel title="Task Board" subtitle="Create, edit, complete, and remove todos.">
+      <Panel title="Task Board" subtitle="You can manage todos only for this logged-in account.">
         {loading ? <p className="loading">Loading todos...</p> : null}
         <StatusMessage kind="error" text={error} />
         <TodoList

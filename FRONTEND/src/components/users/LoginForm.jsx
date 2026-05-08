@@ -1,13 +1,12 @@
 import { useState } from 'react'
-import { validateEmail, validatePassword, validateUsername } from '../../utils/validation'
+import { validatePassword, validateUsername } from '../../utils/validation'
 
 const initialState = {
   username: '',
-  email: '',
   password: '',
 }
 
-export function UserForm({ onSubmit, busy }) {
+export function LoginForm({ onSubmit, busy }) {
   const [form, setForm] = useState(initialState)
   const [fieldErrors, setFieldErrors] = useState({})
 
@@ -18,20 +17,18 @@ export function UserForm({ onSubmit, busy }) {
 
   async function submit(event) {
     event.preventDefault()
+
     const nextErrors = {
       username: validateUsername(form.username),
-      email: validateEmail(form.email),
       password: validatePassword(form.password),
     }
     setFieldErrors(nextErrors)
 
-    if (nextErrors.username || nextErrors.email || nextErrors.password) {
+    if (nextErrors.username || nextErrors.password) {
       return
     }
 
     await onSubmit(form)
-    setForm(initialState)
-    setFieldErrors({})
   }
 
   return (
@@ -51,19 +48,6 @@ export function UserForm({ onSubmit, busy }) {
       </label>
 
       <label>
-        Email
-        <input
-          type="email"
-          name="email"
-          value={form.email}
-          onChange={onChange}
-          required
-          placeholder="john@example.com"
-        />
-        {fieldErrors.email ? <small className="field-error">{fieldErrors.email}</small> : null}
-      </label>
-
-      <label>
         Password
         <input
           type="password"
@@ -78,7 +62,7 @@ export function UserForm({ onSubmit, busy }) {
       </label>
 
       <button type="submit" disabled={busy}>
-        {busy ? 'Creating...' : 'Create User'}
+        {busy ? 'Logging in...' : 'Login'}
       </button>
     </form>
   )

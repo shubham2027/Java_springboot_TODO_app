@@ -11,6 +11,13 @@ export function createUser(payload) {
   })
 }
 
+export function loginUser(payload) {
+  return request('/api/users/login', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
 export function updateUser(userId, payload) {
   return request(`/api/users/${userId}`, {
     method: 'PUT',
