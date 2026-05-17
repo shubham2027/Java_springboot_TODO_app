@@ -4,5 +4,4 @@ public class EmptyDb extends RuntimeException {
     public EmptyDb(String message) {
         super(message);
     }
-    
 }
